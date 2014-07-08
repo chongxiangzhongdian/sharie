@@ -1,0 +1,24 @@
+#!/bin/bash
+#############################################################################
+# Program : Sync MacRed
+# Description : sync files between this folder on Redhat 6 and a folder on rmbp
+# Date : May 21st 2014
+# Revision : 0.1 
+# Updates : Mac to red hat version 
+#############################################################################
+# Initialization : 
+#############################################################################
+usr_mac="cyanjin"
+usr_red="cyan"
+host_mac="cyanjin-rmbp.wv-wifi.mentorg.com"
+host_red="calintern6"
+path_mac="/Users/ChaunceyYan/share/"
+path_red="/home/cyan/Desktop/programs/share/"
+#############################################################################
+#############################################################################
+
+res_ping=`ping -c 1 $host_red | grep "ping: unknown host"`
+if [[ -z $res_ping ]];then
+	rsync -auzv --del $path_mac $usr_red@$host_red:$path_red  # reverse timestamp update newer file recursively compressed
+fi
+
