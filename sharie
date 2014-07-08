@@ -1,0 +1,98 @@
+#!/bin/bash
+######################################################################################################
+# Program	: sharie
+# Author	: Chauncey Yan
+# Functions	: sync files between multiple dirs
+# Revison	: 0.1
+# Mod date	: May 27 2014
+# Updates	:
+# Issues	:
+######################################################################################################
+# Init		: 0:Pogo 1:Mac 2:Red 3:Pi 4:Win
+######################################################################################################
+usr=("cyanjin" "cyanjin" "cyan" "pi" "Cyan")
+host_mac="cyanjin-rmbp.wv-wifi.mentorg.com"
+host_red="calintern6"
+host_pogo="mobkilla.no-ip.biz"
+host_pi="mobkilla.no-ip.biz:7777"
+host_win="10.0.0.4"
+host=($host_pogo $host_mac $host_red $host_pi $host_win)
+path_mac="/Users/ChaunceyYan/share/"
+path_red="/home/cyan/Desktop/programs/share/"
+path_pi="/home/pi/share/"
+path_pogo="/media/drive_1/home/cyanjin/share/"
+path_win="/cygdrive/d/TDOWNLOAD"
+path=($path_pogo $path_mac $path_red $path_pi $path_win)
+online=(0 0 0 0 0)
+
+######################################################################################################
+# Function	: 
+# Input		: Null
+# Output	: rsync results on the screen
+# Issues	:
+######################################################################################################
+function check_hosts {
+	i=0
+	for hs in ${host[@]};do
+		#echo hs:$hs
+		res_ping=`ping $hs -n -c 1 2>/dev/null | grep "1 received"`
+		#echo $i:$res_ping
+		if [[ -n $res_ping ]];then
+			online[$i]=1
+		fi
+		((i=$i+1))
+	done
+	#echo i:$i
+	#echo ${online[*]}
+}
+
+######################################################################################################
+# Function	: rsync spicial for red
+# Input		: Null
+# Output	: rsync results on the screen
+# Issues	:
+######################################################################################################
+function rsync_ser2cli2 {
+	path_ser=$path_pogo	
+	usr_cli=${usr[$1]}
+	host_cli=${host[$1]}
+	path_cli=${path[$1]}
+	res_ping=`ping $host_cli -n -c 1 2>/dev/null | grep "1 received"`
+	if [[ -n $res_ping ]];then
+		rsync -auzv --del $path_ser $usr_cli@$host_cli:$path_cli  # reverse timestamp update newer file recursively compressed
+	fi
+}
+
+######################################################################################################
+# Function	: rsync update with delete
+# Input		: Null
+# Output	: rsync results on the screen
+# Issues	:
+######################################################################################################
+function rsync_ser2cli {
+	if [[ $1 == "2" ]];then
+		rsync_ser2cli2 2
+		return ;
+	fi
+	path_ser=$path_pogo	
+	usr_cli=${usr[$1]}
+	host_cli=${host[$1]}
+	path_cli=${path[$1]}
+	res_ping=`ping $host_cli -n -c 1 2>/dev/null | grep "1 received"`
+	if [[ -n $res_ping ]];then
+		rsync -auzv --del $path_ser $usr_cli@$host_cli:$path_cli  # reverse timestamp update newer file recursively compressed
+	fi
+}
+
+######################################################################################################
+# Main		:
+# Issues	:
+######################################################################################################
+if [[ -n $var ]];then
+	echo $var is not empty
+fi
+check_hosts
+echo ${online[*]}
+
+
+
