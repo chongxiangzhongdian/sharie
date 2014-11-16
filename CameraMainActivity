@@ -1,0 +1,104 @@
+package com.googlecardboard.googlecardboard;
+
+import android.support.v7.app.ActionBarActivity;
+import android.app.Activity;
+import android.graphics.Camera;
+import android.hardware.Camera.CameraInfo;
+import android.media.MediaRecorder;
+import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.Surface;
+import android.view.SurfaceView;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.Toast;
+
+public class MainActivity extends ActionBarActivity {
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.main, menu);
+		return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// Handle action bar item clicks here. The action bar will
+		// automatically handle clicks on the Home/Up button, so long
+		// as you specify a parent activity in AndroidManifest.xml.
+		int id = item.getItemId();
+		if (id == R.id.action_settings) {
+			return true;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
+	public void onButtonClick(View v) {
+		EditText inputText = (EditText) findViewById(R.id.input_text);
+        String message = inputText.getText().toString();
+		Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+	}
+
+	public static void setCameraDisplayOrientation(Activity activity,
+	    int cameraId, android.hardware.Camera camera) {
+	    android.hardware.Camera.CameraInfo info =
+	         new android.hardware.Camera.CameraInfo();
+	    android.hardware.Camera.getCameraInfo(cameraId, info);
+	    int rotation = activity.getWindowManager().getDefaultDisplay()
+	         .getRotation();
+	    int degrees = 0;
+	    switch (rotation) {
+	        case Surface.ROTATION_0: degrees = 0; break;
+	        case Surface.ROTATION_90: degrees = 90; break;
+	        case Surface.ROTATION_180: degrees = 180; break;
+	        case Surface.ROTATION_270: degrees = 270; break;
+	    }
+
+	    int result;
+	    if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+	        result = (info.orientation + degrees) % 360;
+	        result = (360 - result) % 360;  // compensate the mirror
+	    } else {  // back-facing
+	        result = (info.orientation - degrees + 360) % 360;
+	    }
+	    camera.setDisplayOrientation(result);
+    }
+
+	public class CameraActivity extends Activity {
+	    private Camera mCamera;
+	    private SurfaceView mPreview;
+	    private MediaRecorder mMediaRecorder;
+
+	    @Override
+	    protected void onPause() {
+	        super.onPause();
+	        releaseMediaRecorder();       // if you are using MediaRecorder, release it first
+	        releaseCamera();              // release the camera immediately on pause event
+	    }
+
+	    @SuppressWarnings("deprecation")
+		private void releaseMediaRecorder(){
+	        if (mMediaRecorder != null) {
+	            mMediaRecorder.reset();   // clear recorder configuration
+	            mMediaRecorder.release(); // release the recorder object
+	            mMediaRecorder = null;
+	            ((android.graphic.Camera) mCamera).lock();           // lock camera for later use
+	        }
+	    }
+
+	    private void releaseCamera(){
+	        if (mCamera != null){
+	            ((android.hardware.Camera) mCamera).release();        // release the camera for other applications
+	            mCamera = null;
+	        }
+	    }
+	}
+}
